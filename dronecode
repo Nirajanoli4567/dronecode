@@ -1,0 +1,122 @@
+#define BLYNK_TEMPLATE_ID "TMPL6sR60Qtp-"
+#define BLYNK_TEMPLATE_NAME "Dronecontroller"
+#define BLYNK_AUTH_TOKEN "AGaggGEBLkOGK2yTRa6KE9FYPPlVQf6I"
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+
+#define BLYNK_PRINT Serial
+
+#define TRIGGER_PIN D6
+#define ECHO_PIN D7
+#define forwardpin D1
+#define backwardpin D2
+#define leftpin D3
+#define rightpin D4
+
+bool forward = false;
+bool backward = false;
+bool left = false;
+bool right = false;
+int Speed;
+
+char auth[] = "AGaggGEBLkOGK2yTRa6KE9FYPPlVQf6I"; // Enter your Blynk application auth token
+char ssid[] = "local";                         
+char pass[] = "local123";                   
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(forwardpin, OUTPUT);
+  pinMode(backwardpin, OUTPUT);
+  pinMode(leftpin, OUTPUT);
+  pinMode(rightpin, OUTPUT);
+  // delay(5000); 
+  setup_wifi();
+  Blynk.begin(auth, ssid, pass);
+}
+
+BLYNK_WRITE(V1) {
+  forward = param.asInt(); // Read value from virtual pin V1
+}
+
+BLYNK_WRITE(V2) {
+  backward = param.asInt(); // Read value from virtual pin V2
+}
+
+BLYNK_WRITE(V3) {
+  left = param.asInt(); // Read value from virtual pin V3
+}
+
+BLYNK_WRITE(V4) {
+  right = param.asInt(); // Read value from virtual pin V4
+}
+
+BLYNK_WRITE(V0) {
+  Speed = param.asInt(); // Read value from virtual pin V5 (Speed)
+}
+
+void loop() {
+  Blynk.run();
+
+  // Control Motors based on Blynk app inputs
+  if (forward) {
+    digitalWrite(forwardpin, HIGH);
+    Serial.println("forward is given");
+    digitalWrite(backwardpin, LOW);
+    analogWrite(forwardpin, Speed); 
+
+
+
+    analogWrite(forwardpin, Speed); // Set speed using PWM
+  } else if (backward) {
+    digitalWrite(forwardpin, LOW);
+    digitalWrite(backwardpin, HIGH);
+        Serial.println("backward is given");
+    analogWrite(backwardpin, Speed); // Set speed using PWM
+  } else {
+    digitalWrite(forwardpin, LOW);
+    digitalWrite(backwardpin, LOW);
+
+  }
+
+  if (left) {
+    digitalWrite(leftpin, HIGH);
+    digitalWrite(rightpin, LOW);
+        Serial.println("left is given");
+    analogWrite(leftpin, Speed);
+    analogWrite(backwardpin, Speed); 
+analogWrite(leftpin, Speed);
+
+  } else if (right) {
+    digitalWrite(leftpin, LOW);
+    digitalWrite(rightpin, HIGH);
+    Serial.println("right is given");
+    analogWrite(rightpin, Speed); 
+  }
+   else{
+    digitalWrite(leftpin, LOW);
+    digitalWrite(rightpin, LOW);
+    digitalWrite(forwardpin, LOW);
+    digitalWrite(backwardpin, LOW);
+
+
+
+  }
+}
+
+void setup_wifi()
+{
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println("\"" + String(ssid) + "\"");
+
+  WiFi.begin(ssid, pass); 
+  while (WiFi.status()!= WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi connected");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+}
